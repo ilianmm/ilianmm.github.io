@@ -1,7 +1,21 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+<h1>Referencing into Harvard Style for Glasgow University Politics Department</h1>
+<p id="refOutput">Your Reference: </p>
+
+<button type="button" onclick="myBookReference()">Generate Reference</button>
+
+
+<script>
+	function myBookReference()
+		{
+		refOutput = document.getElementById("refOutput");
+		
+		
+		refOutput.innerHTML = "Your Reference: ";
+		}
+</script>
+
 </body>
 </html>
