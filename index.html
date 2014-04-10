@@ -9,9 +9,10 @@
 <script>
 	function bookReference() 
 	{
-	document.write("<form id=\"refInput\">", "Surname: <input type=\"text\" name=\"surname\" value=\"\">", "First Name: <input type=\"text\" name=\"firstName\" value=\"\"></br>", "Year of Publication: <input type=\"text\" name=\"year\" value=\"\"></br>", "Title of Book: <input type=\"text\" name=\"titleItalics\" value=\"\"></br>", "Printed at: <input type=\"text\" name=\"palcePrinted\" value=\"\"></br>", "Published by: <input type=\"text\" name=\"published\" value=\"\"></br>", "</form>", "<button id= \"generateReference\" type=\"button\" onclick=\"myBookReference()\">Generate Reference</button>", "<br/>", "<p id=\"refOutput\">Your Reference: </p>");
+	document.write("<button id= \"generateReference\" type=\"button\" onclick=\"myBookReference()\">Generate Reference</button>", "<br/>", "<p id=\"refOutput\">Your Reference: </p>");
 	}
-
+</script>
+<script>
 	function myBookReference()
 		{
 		refOutput = document.getElementById("refOutput");
