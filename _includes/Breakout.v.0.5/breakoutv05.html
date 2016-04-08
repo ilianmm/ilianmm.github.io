@@ -1,0 +1,151 @@
+<html>
+	<head>
+		<meta charset ="UTF-8"/>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			canvas {
+				background: #eee;
+				display: block;
+				margin: 10px 0 10px 0;
+			}
+		</style>
+	<!--<script type="text/javascript" src="../../../../../Breakout/paddle.js"></script>
+	<script type="text/javascript" src="../../../../../Breakout/ball.js"></script>	
+	<script type="text/javascript" src="../../../../../Breakout/brick.js"></script>		-->
+
+		<script>
+			var canvas;
+			var ctx;
+
+			var rightPressed;
+			var leftPressed;
+			var startPressed;
+			var pausePressed;
+			
+			// score and lives
+			var score = 0;
+			var lives = 3;
+			var level = 1;
+			var winLevel = 5;
+			var maxScore = 0;
+
+			// paddle and paddle constants
+			var paddle;
+			var PADDLE_WIDTH = 75;
+			var PADDLE_HEIGHT = 10;
+			var PADDLE_Y_MARGIN;
+			var PADDLE_START_X;
+			var PADDLE_COLOR = "#0085DD";
+
+			// ball variables & constants
+			var ball;
+			var BALL_RADIUS = 10;
+			var BALL_COLOR = "#0085DD";
+			var BALL_Y_MARGIN;
+
+			// brick variables & constants
+			var brick;
+			var BRICK_WIDTH = 75; 
+			var BRICK_HEIGHT = 20; 
+			var BRICK_COLOR = "#0085DD";
+			var BRICK_STATUS = 1;
+			var BRICK_COLLISION_PHYSICS = false; 
+			var BRICK_COLS = 10;
+			var BRICK_ROWS = 4;
+			var BRICK_OFFSET_TOP = 50;
+			var BRICK_OFFSET_LEFT = 70;
+			var BRICK_PADDING = 10;
+			var bricks;
+
+			function init() {
+				canvas = document.getElementById("myCanvas");
+				ctx = canvas.getContext("2d");
+
+				PADDLE_START_X = (canvas.width - PADDLE_WIDTH)/2;
+				BALL_Y_MARGIN = canvas.height-31;
+				PADDLE_Y_MARGIN = canvas.height-20;
+
+				ball = new Ball(canvas.width/2, BALL_Y_MARGIN, BALL_RADIUS, BALL_COLOR);
+				paddle = new Paddle(PADDLE_START_X, PADDLE_Y_MARGIN, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+
+				// user input variables
+				startPressed = false;
+				rightPressed = false;
+				leftPressed = false;
+				pausePressed = false;
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
+				document.addEventListener("mousemove", mouseMoveHandler, false);
+
+				bricks = [];
+				generateBricks();
+
+				//loop();
+				setInterval(loop, 15);
+
+			}; 
+
+			function loop() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				//requestAnimationFrame(loop);
+
+				
+				ball.bound(canvas);
+				paddle.collide(ball);
+
+				ball.draw(ctx);
+				paddle.draw(ctx);
+				drawScore();
+				drawLives();
+
+				collisionDetection();
+				drawBricks();
+
+				if ((ball.y+ball.dy) > (canvas.height-ball.radius)) {
+					if (isDead()) {
+						alert("GAME OVER");
+						document.location.reload();	
+					};
+				};
+
+
+
+				// ball movement logic
+				if (startPressed && !pausePressed) {
+					ball.x += ball.dx;
+					ball.y += ball.dy;
+				};
+
+				// paddle movement logic
+				if (!pausePressed) {
+					if(rightPressed && paddle.x < canvas.width-paddle.width){
+						paddle.x += paddle.dx;
+						if(!startPressed) {
+							ball.x += paddle.dx;
+						};
+					} else if (leftPressed && paddle.x > 0) {
+						paddle.x -= paddle.dx;
+						if(!startPressed) {
+							ball.x -= paddle.dx;
+						};
+					};
+				};
+			};
+
+		</script>
+	</head>
+	<body onload="init()">
+		<h1>Game Rules:</h1>
+		<p>Press Enter or Up arrow to start.<br/>
+			Press Space to pause.<br/>
+			Press Left Arrow and Right Arrow to move paddle, or use mouse.</p>
+		<canvas id="myCanvas" height="600" width="960"></canvas>
+
+
+
+
+	</body>
+</html>

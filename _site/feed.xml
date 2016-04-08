@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Let&#39;s just test this&#39;</title>
+    <description>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</description>
+    <link>http://yourdomain.com/</link>
+    <atom:link href="http://yourdomain.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Fri, 08 Apr 2016 10:58:03 +0100</pubDate>
+    <lastBuildDate>Fri, 08 Apr 2016 10:58:03 +0100</lastBuildDate>
+    <generator>Jekyll v3.1.2</generator>
+    
+      <item>
+        <title>Breakout mini-game with random generated bricks and brick collision angle adjustments</title>
+        <description>&lt;script type=&quot;text/javascript&quot;&gt; 
+function Ball(x, y, radius, color) {
+	this.x = x;
+	this.y = y;
+
+	this.dx = 6;
+	this.dy = -6;
+	this.dxRange = this.dx*2;
+	
+	this.startDX = 6;
+	this.startDY = -6;
+
+	this.radius = 10;
+
+	this.color = color;
+
+	this.draw = function(context) {
+		context.save();
+		
+		context.translate(this.x, this.y);
+	  
+		context.fillStyle = this.color;
+		
+		context.beginPath();
+		context.arc(0, 0, this.radius, 0, (Math.PI * 2), true);
+		context.fill();
+		context.closePath();
+		context.restore();
+	};
+
+	this.bound = function(canvas) {
+		if ((this.x + this.dx &gt;= (canvas.width - this.radius)) ||
+			(this.x + this.dx &lt;= this.radius)) {
+			this.dx = -this.dx;
+		} else if ((this.y + this.dy) &lt;= this.radius) {
+			this.dy = -this.dy;
+		};
+	};
+
+
+}
+function Brick(x, y, width, height, status, collisionPhysics) {
+	this.x = x;
+	this.y = y;
+	this.color = &quot;#0085DD&quot;;
+
+	//if (status==2) {
+//		this.color = &quot;#FF0000&quot;; 
+//	};
+
+	this.status = status;
+
+	this.width = width;
+	this.height = height;
+	this.collisionPhysics = collisionPhysics;
+
+	this.colorise = function () {
+		if (brick.status == 1) {
+			return &quot;#0085DD&quot;;
+		} else if(brick.status==2) {
+			return &quot;#FF0000&quot;;						
+		};
+
+	};
+
+	this.collision = function (ball) {
+		if (this.status != 0 ) {
+			if (ball.x &gt;= this.x-ball.radius &amp;&amp; ball.x &lt;= this.x + this.width + ball.radius 
+				&amp;&amp; ball.y &gt;= this.y-ball.radius &amp;&amp; ball.y &lt;= this.y+this.height + ball.radius) {
+				
+				if (this.collisionPhysics) {
+					var percentage = (ball.x - this.x)/this.width;
+					ball.dx = (percentage * ball.dxRange) - (ball.dxRange/2);
+				};
+				
+				ball.dy = -ball.dy;
+				this.status--;
+				return true;
+			};
+		} else {
+			return false;
+		};
+	};
+}
+function Paddle(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.dx = 7;
+	
+	this.width = width;
+	this.height = height;
+	this.color = color;
+
+	this.draw = function(context) {
+		context.beginPath();
+		context.rect(this.x, this.y, this.width, this.height);
+		context.fillStyle = this.color;
+		context.fill();
+		context.closePath();
+		context.restore();
+	};
+
+	this.collide = function(ball) {
+		if ((ball.y+ball.radius&gt;=this.y) 
+			&amp;&amp; (ball.x &gt; (this.x - ball.radius) &amp;&amp; ball.x &lt; this.x + this.width + ball.radius)) {
+			var percentage = (ball.x - this.x) / this.width;
+			ball.dx = (percentage * ball.dxRange) - (ball.dxRange/2);
+			ball.dy = -ball.dy;
+		};
+	};
+}
+function collisionDetection() {
+				for(c=0; c&lt;BRICK_COLS; c++) {
+					for(r=0; r&lt;BRICK_ROWS; r++) {
+						brick = bricks[c][r];
+						if (brick.collision(ball)) {
+							score++;
+							if (score == maxScore) {
+								if(level != winLevel) {
+									alert(&quot;You passed level &quot; + level + &quot;!&quot;);
+									level++;
+									respawn();
+									generateBricks();
+								} else {
+									alert(&quot;You WIN! Congratulations!&quot;);
+									document.location.reload();	
+								};
+							};
+						};
+					};
+				};
+			};
+
+function drawBricks() {
+	for (c=0; c&lt;BRICK_COLS; c++) {
+		for (r=0; r&lt;BRICK_ROWS; r++) {
+			if (bricks[c][r].status != 0) {
+				brick = bricks[c][r];
+				brick.x = (c*(BRICK_WIDTH+BRICK_PADDING)+BRICK_OFFSET_LEFT);
+				brick.y = (r*(BRICK_HEIGHT+BRICK_PADDING)+BRICK_OFFSET_TOP);
+				ctx.beginPath();
+				ctx.rect(brick.x, brick.y, brick.width, brick.height);
+				ctx.fillStyle = brick.colorise();
+				ctx.fill();
+				ctx.closePath();
+			};
+		};
+	};
+};
+
+function generateBricks() {
+	for (c=0; c&lt;BRICK_COLS; c++) {
+		bricks[c] = [];
+		for(r=0; r&lt;BRICK_ROWS; r++) {
+			status = randomiseBrick(c,r);
+			if (status == 1) {
+				maxScore++;
+			} else if(status == 2) {
+				maxScore = maxScore+2;
+			};
+			bricks[c][r] = new Brick (0, 0, BRICK_WIDTH, BRICK_HEIGHT, status, BRICK_COLLISION_PHYSICS);
+		};
+	};
+};
+function randomiseBrick(c, r) {
+	if (level == 1) {
+		switch(r){
+			case 0: return 1;
+			case 1: return 1;
+			default: return 0;
+		};
+	} else {
+		switch (r) {
+			default: return randomise();
+		};
+	};
+};
+
+function randomise() {
+	if (Math.floor(Math.random()*5)+1 == 1) {
+		return 0;
+	} else if (Math.floor(Math.random()*4)+1 == 1) {
+		return 2;
+	} else {
+		return 1;
+	};
+};
+function drawLives() {
+    ctx.font = &quot;16px Arial&quot;;
+    ctx.fillStyle = &quot;#0095DD&quot;;
+    ctx.fillText(&quot;Lives: &quot; + lives, canvas.width-65, 20);
+};
+
+function drawScore() {
+	ctx.beginPath();
+	ctx.font = &quot;16px Arial&quot;;
+	ctx.fillStyle = &quot;#0095DD&quot;;
+	ctx.fillText(&quot;Score: &quot;+score, 8, 20);
+	ctx.closePath();
+};
+
+function keyDownHandler(e) {
+	if(e.keyCode==39) {
+		rightPressed = true;
+	} else if (e.keyCode==37) {
+		leftPressed = true;
+	} else if (e.keyCode==32) {
+		pausePressed = !pausePressed;
+	} else if (e.keyCode==13 || e.keyCode==38) {
+		console.log(&quot;startPressed=&quot; + startPressed);
+		startPressed = true;
+	};
+};
+
+function keyUpHandler(e) {
+	if(e.keyCode==39) {
+		rightPressed = false;
+	} else if (e.keyCode==37) {
+		leftPressed = false;
+	} else if (e.keyCode==32) {
+	};
+};
+
+function mouseMoveHandler(e) {
+	if (!pausePressed) {
+		var relativeX = e.clientX - canvas.offsetLeft;
+		if(relativeX-paddle.width/2 &gt; 0 &amp;&amp; relativeX+paddle.width/2 &lt; canvas.width) {
+			paddle.x = relativeX - paddle.width/2;
+			if(!startPressed) {
+				ball.x = relativeX;
+			};
+		};
+	};
+};
+
+function isDead() {
+	if (lives-1 &lt; 1) {
+		lives--;
+		return true;
+	} else {
+		lives--;
+		respawn();
+	    return false;
+	};
+};
+
+function respawn() {
+	ball.x = canvas.width/2;
+	ball.y = BALL_Y_MARGIN;
+	ball.dx = ball.startDX;
+	ball.dy = ball.startDY;
+	paddle.x = PADDLE_START_X;
+	startPressed = false;
+};
+
+&lt;/script&gt;
+
+&lt;html&gt;
+	&lt;head&gt;
+		&lt;meta charset=&quot;UTF-8&quot; /&gt;
+		&lt;style&gt;
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			canvas {
+				background: #eee;
+				display: block;
+				margin: 10px 0 10px 0;
+			}
+		&lt;/style&gt;
+	&lt;!--&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/paddle.js&quot;&gt;&lt;/script&gt;
+	&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/ball.js&quot;&gt;&lt;/script&gt;	
+	&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/brick.js&quot;&gt;&lt;/script&gt;		--&gt;
+
+		&lt;script&gt;
+			var canvas;
+			var ctx;
+
+			var rightPressed;
+			var leftPressed;
+			var startPressed;
+			var pausePressed;
+			
+			// score and lives
+			var score = 0;
+			var lives = 3;
+			var level = 1;
+			var winLevel = 5;
+			var maxScore = 0;
+
+			// paddle and paddle constants
+			var paddle;
+			var PADDLE_WIDTH = 75;
+			var PADDLE_HEIGHT = 10;
+			var PADDLE_Y_MARGIN;
+			var PADDLE_START_X;
+			var PADDLE_COLOR = &quot;#0085DD&quot;;
+
+			// ball variables &amp; constants
+			var ball;
+			var BALL_RADIUS = 10;
+			var BALL_COLOR = &quot;#0085DD&quot;;
+			var BALL_Y_MARGIN;
+
+			// brick variables &amp; constants
+			var brick;
+			var BRICK_WIDTH = 75; 
+			var BRICK_HEIGHT = 20; 
+			var BRICK_COLOR = &quot;#0085DD&quot;;
+			var BRICK_STATUS = 1;
+			var BRICK_COLLISION_PHYSICS = false; 
+			var BRICK_COLS = 10;
+			var BRICK_ROWS = 4;
+			var BRICK_OFFSET_TOP = 50;
+			var BRICK_OFFSET_LEFT = 70;
+			var BRICK_PADDING = 10;
+			var bricks;
+
+			function init() {
+				canvas = document.getElementById(&quot;myCanvas&quot;);
+				ctx = canvas.getContext(&quot;2d&quot;);
+
+				PADDLE_START_X = (canvas.width - PADDLE_WIDTH)/2;
+				BALL_Y_MARGIN = canvas.height-31;
+				PADDLE_Y_MARGIN = canvas.height-20;
+
+				ball = new Ball(canvas.width/2, BALL_Y_MARGIN, BALL_RADIUS, BALL_COLOR);
+				paddle = new Paddle(PADDLE_START_X, PADDLE_Y_MARGIN, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+
+				// user input variables
+				startPressed = false;
+				rightPressed = false;
+				leftPressed = false;
+				pausePressed = false;
+				document.addEventListener(&quot;keydown&quot;, keyDownHandler, false);
+				document.addEventListener(&quot;keyup&quot;, keyUpHandler, false);
+				document.addEventListener(&quot;mousemove&quot;, mouseMoveHandler, false);
+
+				bricks = [];
+				generateBricks();
+
+				//loop();
+				setInterval(loop, 15);
+
+			}; 
+
+			function loop() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				//requestAnimationFrame(loop);
+
+				
+				ball.bound(canvas);
+				paddle.collide(ball);
+
+				ball.draw(ctx);
+				paddle.draw(ctx);
+				drawScore();
+				drawLives();
+
+				collisionDetection();
+				drawBricks();
+
+				if ((ball.y+ball.dy) &gt; (canvas.height-ball.radius)) {
+					if (isDead()) {
+						alert(&quot;GAME OVER&quot;);
+						document.location.reload();	
+					};
+				};
+
+
+
+				// ball movement logic
+				if (startPressed &amp;&amp; !pausePressed) {
+					ball.x += ball.dx;
+					ball.y += ball.dy;
+				};
+
+				// paddle movement logic
+				if (!pausePressed) {
+					if(rightPressed &amp;&amp; paddle.x &lt; canvas.width-paddle.width){
+						paddle.x += paddle.dx;
+						if(!startPressed) {
+							ball.x += paddle.dx;
+						};
+					} else if (leftPressed &amp;&amp; paddle.x &gt; 0) {
+						paddle.x -= paddle.dx;
+						if(!startPressed) {
+							ball.x -= paddle.dx;
+						};
+					};
+				};
+			};
+
+		&lt;/script&gt;
+	&lt;/head&gt;
+	&lt;body onload=&quot;init()&quot;&gt;
+		&lt;h1&gt;Game Rules:&lt;/h1&gt;
+		&lt;p&gt;Press Enter or Up arrow to start.&lt;br /&gt;
+			Press Space to pause.&lt;br /&gt;
+			Press Left Arrow and Right Arrow to move paddle, or use mouse.&lt;/p&gt;
+		&lt;canvas id=&quot;myCanvas&quot; height=&quot;600&quot; width=&quot;960&quot;&gt;&lt;/canvas&gt;
+
+
+
+
+	&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;p&gt;Code is available in my &lt;a href=&quot;https://github.com/ilianmm/&quot;&gt;GitHub Repository&lt;/a&gt;.&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 08 Apr 2016 07:20:52 +0100</pubDate>
+        <link>http://yourdomain.com/breakout/2016/04/08/Breakout.html</link>
+        <guid isPermaLink="true">http://yourdomain.com/breakout/2016/04/08/Breakout.html</guid>
+        
+        
+        <category>breakout</category>
+        
+      </item>
+    
+      <item>
+        <title>Unity Space Shooter Mini-Game</title>
+        <description>&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
+	&lt;head&gt;
+		&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+		&lt;title&gt;Unity Web Player | Space Shooter&lt;/title&gt;
+		&lt;script type=&quot;text/javascript&quot; src=&quot;https://ssl-webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/jquery.min.js&quot;&gt;&lt;/script&gt;
+		&lt;script type=&quot;text/javascript&quot;&gt;
+		&lt;!--
+		var unityObjectUrl = &quot;http://webplayer.unity3d.com/download_webplayer-3.x/3.0/uo/UnityObject2.js&quot;;
+		if (document.location.protocol == &#39;https:&#39;)
+			unityObjectUrl = unityObjectUrl.replace(&quot;http://&quot;, &quot;https://ssl-&quot;);
+		document.write(&#39;&lt;script type=&quot;text\/javascript&quot; src=&quot;&#39; + unityObjectUrl + &#39;&quot;&gt;&lt;\/script&gt;&#39;);
+		--&gt;
+		&lt;/script&gt;
+		&lt;script type=&quot;text/javascript&quot;&gt;
+		&lt;!--
+			var config = {
+				width: 600, 
+				height: 900,
+				params: { enableDebugging:&quot;0&quot; }
+				
+			};
+			var u = new UnityObject2(config);
+
+			jQuery(function() {
+
+				var $missingScreen = jQuery(&quot;#unityPlayer&quot;).find(&quot;.missing&quot;);
+				var $brokenScreen = jQuery(&quot;#unityPlayer&quot;).find(&quot;.broken&quot;);
+				$missingScreen.hide();
+				$brokenScreen.hide();
+				
+				u.observeProgress(function (progress) {
+					switch(progress.pluginStatus) {
+						case &quot;broken&quot;:
+							$brokenScreen.find(&quot;a&quot;).click(function (e) {
+								e.stopPropagation();
+								e.preventDefault();
+								u.installPlugin();
+								return false;
+							});
+							$brokenScreen.show();
+						break;
+						case &quot;missing&quot;:
+							$missingScreen.find(&quot;a&quot;).click(function (e) {
+								e.stopPropagation();
+								e.preventDefault();
+								u.installPlugin();
+								return false;
+							});
+							$missingScreen.show();
+						break;
+						case &quot;installed&quot;:
+							$missingScreen.remove();
+						break;
+						case &quot;first&quot;:
+						break;
+					}
+				});
+				u.initPlugin(jQuery(&quot;#unityPlayer&quot;)[0], &quot;v.0.5.5.unity3d&quot;);
+			});
+		--&gt;
+		&lt;/script&gt;
+		&lt;style type=&quot;text/css&quot;&gt;
+		&lt;!--
+		body {
+			font-family: Helvetica, Verdana, Arial, sans-serif;
+			background-color: white;
+			color: black;
+			text-align: center;
+		}
+		a:link, a:visited {
+			color: #000;
+		}
+		a:active, a:hover {
+			color: #666;
+		}
+		p.header {
+			font-size: small;
+		}
+		p.header span {
+			font-weight: bold;
+		}
+		p.footer {
+			font-size: x-small;
+		}
+		div.content {
+			margin: auto;
+			width: 600px;
+		}
+		div.broken,
+		div.missing {
+			margin: auto;
+			position: relative;
+			top: 50%;
+			width: 193px;
+		}
+		div.broken a,
+		div.missing a {
+			height: 63px;
+			position: relative;
+			top: -31px;
+		}
+		div.broken img,
+		div.missing img {
+			border-width: 0px;
+		}
+		div.broken {
+			display: none;
+		}
+		div#unityPlayer {
+			cursor: default;
+			height: 900px;
+			width: 600px;
+		}
+		--&gt;
+		&lt;/style&gt;
+	&lt;/head&gt;
+	&lt;body&gt;
+		&lt;p class=&quot;header&quot;&gt;&lt;span&gt;Unity Web Player | &lt;/span&gt;Space Shooter&lt;/p&gt;
+		&lt;div class=&quot;content&quot;&gt;
+			&lt;div id=&quot;unityPlayer&quot;&gt;
+				&lt;div class=&quot;missing&quot;&gt;
+					&lt;a href=&quot;http://unity3d.com/webplayer/&quot; title=&quot;Unity Web Player. Install now!&quot;&gt;
+						&lt;img alt=&quot;Unity Web Player. Install now!&quot; src=&quot;http://webplayer.unity3d.com/installation/getunity.png&quot; width=&quot;193&quot; height=&quot;63&quot; /&gt;
+					&lt;/a&gt;
+				&lt;/div&gt;
+				&lt;div class=&quot;broken&quot;&gt;
+					&lt;a href=&quot;http://unity3d.com/webplayer/&quot; title=&quot;Unity Web Player. Install now! Restart your browser after install.&quot;&gt;
+						&lt;img alt=&quot;Unity Web Player. Install now! Restart your browser after install.&quot; src=&quot;http://webplayer.unity3d.com/installation/getunityrestart.png&quot; width=&quot;193&quot; height=&quot;63&quot; /&gt;
+					&lt;/a&gt;
+				&lt;/div&gt;
+			&lt;/div&gt;
+		&lt;/div&gt;
+		&lt;p class=&quot;footer&quot;&gt;&amp;laquo; created with &lt;a href=&quot;http://unity3d.com/unity/&quot; title=&quot;Go to unity3d.com&quot;&gt;Unity&lt;/a&gt; &amp;raquo;&lt;/p&gt;
+	&lt;/body&gt;
+&lt;/html&gt;
+
+&lt;p&gt;Code is available in my &lt;a href=&quot;https://github.com/ilianmm/&quot;&gt;GitHub Repository&lt;/a&gt;.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 07 Apr 2016 14:20:52 +0100</pubDate>
+        <link>http://yourdomain.com/spaceshooter/2016/04/07/SpaceShooter.html</link>
+        <guid isPermaLink="true">http://yourdomain.com/spaceshooter/2016/04/07/SpaceShooter.html</guid>
+        
+        
+        <category>spaceshooter</category>
+        
+      </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,24 @@
+---
+layout: post
+title:  "Breakout mini-game with random generated bricks and brick collision angle adjustments"
+date:   2016-04-08 07:20:52 +0100
+categories: breakout
+---
+
+
+<script type="text/javascript"> 
+{% include Breakout.v.0.5/ball.js %}
+{% include Breakout.v.0.5/brick.js %}
+{% include Breakout.v.0.5/paddle.js %}
+{% include Breakout.v.0.5/brickHelper.js %}
+{% include Breakout.v.0.5/gameHelper.js %}
+
+</script>
+{% include Breakout.v.0.5/breakoutv05.html %}
+ 
+
+
+Code is available in my [GitHub Repository][github-repository].
+
+
+[github-repository]: https://github.com/ilianmm/

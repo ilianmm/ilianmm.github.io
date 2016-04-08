@@ -1,0 +1,45 @@
+			function draw() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				collisionDetection();
+				drawBricks();
+				drawPaddle();
+				drawBall();
+				drawScore();
+				drawLives();
+
+				// bounce logic
+				if (((x + dx) > (canvas.width - ballRadius)) || ((x + dx) < ballRadius)) {
+					dx = -dx;
+				};
+
+				if ((y + dy) < 0+ballRadius) {
+					dy = -dy;
+				} else if ((y+ballRadius==paddleY) && (x > paddleX-ballRadius && x < paddleX + paddleWidth + ballRadius)) {
+					var percentage = (x - paddleX) / paddleWidth;
+					dx = (percentage * dxRange) - (dxRange/2);
+					dy = -dy;
+					
+				} else if ((y + dy) > (canvas.height-ballRadius)) {
+					if (isDead()) {
+						alert("GAME OVER");
+						document.location.reload();	
+					};
+				};
+
+
+
+				// ball movement logic
+				x += dx;
+				y += dy;
+
+				// paddle movement logic
+				if(rightPressed && paddleX < canvas.width-paddleWidth){
+					paddleX += 7;					
+				} else if(leftPressed && paddleX > 0) {
+					paddleX -= 7;
+				};
+				//requestAnimationFrame(draw);
+			};
+
+			//setInterval(draw, 15);
+			//draw();
