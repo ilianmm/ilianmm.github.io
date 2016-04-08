@@ -1,9 +1,15 @@
+/** 
+* Draws Lives
+*/
 function drawLives() {
     ctx.font = "16px Arial";
     ctx.fillStyle = "#0095DD";
     ctx.fillText("Lives: " + lives, canvas.width-65, 20);
 };
 
+/** 
+* Draws Score
+*/
 function drawScore() {
 	ctx.beginPath();
 	ctx.font = "16px Arial";
@@ -12,6 +18,11 @@ function drawScore() {
 	ctx.closePath();
 };
 
+/** 
+* Tracks pressed keys and handles movement, pause and start
+* 
+* @param: event
+*/
 function keyDownHandler(e) {
 	if(e.keyCode==39) {
 		rightPressed = true;
@@ -24,7 +35,11 @@ function keyDownHandler(e) {
 		startPressed = true;
 	};
 };
-
+/** 
+* Tracks keys going up and handles movement
+* 
+* @param: event
+*/
 function keyUpHandler(e) {
 	if(e.keyCode==39) {
 		rightPressed = false;
@@ -34,6 +49,11 @@ function keyUpHandler(e) {
 	};
 };
 
+/** 
+* Tracks mouse and defines paddle mouse control
+* 
+* @param: event
+*/
 function mouseMoveHandler(e) {
 	if (!pausePressed) {
 		var relativeX = e.clientX - canvas.offsetLeft;
@@ -46,6 +66,12 @@ function mouseMoveHandler(e) {
 	};
 };
 
+/** 
+* Checks whether player is dead and removes life.
+* If player is dead, it returns false. Otherwise, respawns paddle and ball in middle
+* 
+* @return: boolean
+*/
 function isDead() {
 	if (lives-1 < 1) {
 		lives--;
@@ -57,6 +83,9 @@ function isDead() {
 	};
 };
 
+/** 
+* Respawns playet and ball at the middle of the canvas
+*/
 function respawn() {
 	ball.x = canvas.width/2;
 	ball.y = BALL_Y_MARGIN;

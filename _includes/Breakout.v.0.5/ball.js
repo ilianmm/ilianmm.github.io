@@ -1,3 +1,6 @@
+/**
+* Ball object used for all ball interactions 
+*/
 function Ball(x, y, radius, color) {
 	this.x = x;
 	this.y = y;
@@ -13,6 +16,9 @@ function Ball(x, y, radius, color) {
 
 	this.color = color;
 
+	/** 
+	* Draws ball in canvas 
+	*/
 	this.draw = function(context) {
 		context.save();
 		
@@ -27,6 +33,9 @@ function Ball(x, y, radius, color) {
 		context.restore();
 	};
 
+	/**
+	* Defines collision behaviour with canvas borders 
+	*/
 	this.bound = function(canvas) {
 		if ((this.x + this.dx >= (canvas.width - this.radius)) ||
 			(this.x + this.dx <= this.radius)) {

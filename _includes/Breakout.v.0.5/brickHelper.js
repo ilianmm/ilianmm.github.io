@@ -1,3 +1,11 @@
+// A Collection of Functions supporting brick logic //
+
+/**
+* Itterates throuvh bricks array and checks for collision with ball. 
+* If ball colides with brick, the score is increased, 
+* check for level completion and respawns paddle/ball,
+* and win alert is displayed if all levels are completed.
+*/
 function collisionDetection() {
 				for(c=0; c<BRICK_COLS; c++) {
 					for(r=0; r<BRICK_ROWS; r++) {
@@ -20,6 +28,9 @@ function collisionDetection() {
 				};
 			};
 
+/**
+* Iterates through array[c][r] and draws bricks
+*/
 function drawBricks() {
 	for (c=0; c<BRICK_COLS; c++) {
 		for (r=0; r<BRICK_ROWS; r++) {
@@ -37,6 +48,9 @@ function drawBricks() {
 	};
 };
 
+/** 
+* Iterates through array[c][r] and generates brick objects to fill canvas
+*/
 function generateBricks() {
 	for (c=0; c<BRICK_COLS; c++) {
 		bricks[c] = [];
@@ -51,11 +65,20 @@ function generateBricks() {
 		};
 	};
 };
+
+/** 
+* Defines status of brick
+* @TODO: Make a more sophisticated progressing system and randomisation system
+*
+* @param (1): brick columns
+* @param (2): brick rows
+*
+* @return: brick status integer
+*/
 function randomiseBrick(c, r) {
 	if (level == 1) {
 		switch(r){
 			case 0: return 1;
-			case 1: return 1;
 			default: return 0;
 		};
 	} else {
@@ -65,6 +88,11 @@ function randomiseBrick(c, r) {
 	};
 };
 
+/** 
+* Provides random status for bricks based set probabilities
+*
+* @return: randomised brick status
+*/
 function randomise() {
 	if (Math.floor(Math.random()*5)+1 == 1) {
 		return 0;

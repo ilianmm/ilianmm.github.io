@@ -6,13 +6,16 @@
 </description>
     <link>http://ilianmm.github.io/</link>
     <atom:link href="http://ilianmm.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 08 Apr 2016 11:32:30 +0100</pubDate>
-    <lastBuildDate>Fri, 08 Apr 2016 11:32:30 +0100</lastBuildDate>
+    <pubDate>Fri, 08 Apr 2016 12:20:21 +0100</pubDate>
+    <lastBuildDate>Fri, 08 Apr 2016 12:20:21 +0100</lastBuildDate>
     <generator>Jekyll v3.1.2</generator>
     
       <item>
         <title>Breakout mini-game with random generated bricks and brick collision angle adjustments</title>
         <description>&lt;script type=&quot;text/javascript&quot;&gt; 
+/**
+* Ball object used for all ball interactions 
+*/
 function Ball(x, y, radius, color) {
 	this.x = x;
 	this.y = y;
@@ -28,6 +31,9 @@ function Ball(x, y, radius, color) {
 
 	this.color = color;
 
+	/** 
+	* Draws ball in canvas 
+	*/
 	this.draw = function(context) {
 		context.save();
 		
@@ -42,6 +48,9 @@ function Ball(x, y, radius, color) {
 		context.restore();
 	};
 
+	/**
+	* Defines collision behaviour with canvas borders 
+	*/
 	this.bound = function(canvas) {
 		if ((this.x + this.dx &gt;= (canvas.width - this.radius)) ||
 			(this.x + this.dx &lt;= this.radius)) {
@@ -53,14 +62,16 @@ function Ball(x, y, radius, color) {
 
 
 }
+/**
+* Brick object housing single brick logic
+*/
 function Brick(x, y, width, height, status, collisionPhysics) {
 	this.x = x;
 	this.y = y;
-	this.color = &quot;#0085DD&quot;;
 
-	//if (status==2) {
-//		this.color = &quot;#FF0000&quot;; 
-//	};
+	// default colour
+	// @TODO: Find a better way to define colour swaps
+	this.color = &quot;#0085DD&quot;;
 
 	this.status = status;
 
@@ -68,6 +79,11 @@ function Brick(x, y, width, height, status, collisionPhysics) {
 	this.height = height;
 	this.collisionPhysics = collisionPhysics;
 
+	/**
+	* Changes colour of brick depending on status
+	*
+	* @TODO: Find a better way to define colour swaps
+	*/
 	this.colorise = function () {
 		if (brick.status == 1) {
 			return &quot;#0085DD&quot;;
@@ -77,11 +93,20 @@ function Brick(x, y, width, height, status, collisionPhysics) {
 
 	};
 
+	/** 
+	* Defines ball collision behaviour when hitting a brick
+	* 
+	* @NOTE: If CollisionPhysics is enabled,then collision bounce angle will depend on the point of inpact
+	* between the ball and the brick, otherwise all bounces have 90% angles.
+	* 
+	* @TODO: allow user to enable and disable at beginning of game
+	* @return: boolean
+	*/
 	this.collision = function (ball) {
 		if (this.status != 0 ) {
 			if (ball.x &gt;= this.x-ball.radius &amp;&amp; ball.x &lt;= this.x + this.width + ball.radius 
 				&amp;&amp; ball.y &gt;= this.y-ball.radius &amp;&amp; ball.y &lt;= this.y+this.height + ball.radius) {
-				
+
 				if (this.collisionPhysics) {
 					var percentage = (ball.x - this.x)/this.width;
 					ball.dx = (percentage * ball.dxRange) - (ball.dxRange/2);
@@ -96,6 +121,14 @@ function Brick(x, y, width, height, status, collisionPhysics) {
 		};
 	};
 }
+/**
+* Creates Paddle object used by user
+* @param (1): x
+* @param (2): y
+* @param (3): width
+* @param (4): height
+* @param (4): color
+*/
 function Paddle(x, y, width, height, color) {
 	this.x = x;
 	this.y = y;
@@ -105,6 +138,9 @@ function Paddle(x, y, width, height, color) {
 	this.height = height;
 	this.color = color;
 
+	/**
+	* Draws paddle
+	*/
 	this.draw = function(context) {
 		context.beginPath();
 		context.rect(this.x, this.y, this.width, this.height);
@@ -114,6 +150,11 @@ function Paddle(x, y, width, height, color) {
 		context.restore();
 	};
 
+	/**
+	* Defines ball collision behaviour when hitting the paddle
+	*
+	* NOTE: Ball bounces at an angle depending on where it connects with the paddle
+	*/
 	this.collide = function(ball) {
 		if ((ball.y+ball.radius&gt;=this.y) 
 			&amp;&amp; (ball.x &gt; (this.x - ball.radius) &amp;&amp; ball.x &lt; this.x + this.width + ball.radius)) {
@@ -123,6 +164,14 @@ function Paddle(x, y, width, height, color) {
 		};
 	};
 }
+// A Collection of Functions supporting brick logic //
+
+/**
+* Itterates throuvh bricks array and checks for collision with ball. 
+* If ball colides with brick, the score is increased, 
+* check for level completion and respawns paddle/ball,
+* and win alert is displayed if all levels are completed.
+*/
 function collisionDetection() {
 				for(c=0; c&lt;BRICK_COLS; c++) {
 					for(r=0; r&lt;BRICK_ROWS; r++) {
@@ -145,6 +194,9 @@ function collisionDetection() {
 				};
 			};
 
+/**
+* Iterates through array[c][r] and draws bricks
+*/
 function drawBricks() {
 	for (c=0; c&lt;BRICK_COLS; c++) {
 		for (r=0; r&lt;BRICK_ROWS; r++) {
@@ -162,6 +214,9 @@ function drawBricks() {
 	};
 };
 
+/** 
+* Iterates through array[c][r] and generates brick objects to fill canvas
+*/
 function generateBricks() {
 	for (c=0; c&lt;BRICK_COLS; c++) {
 		bricks[c] = [];
@@ -176,11 +231,20 @@ function generateBricks() {
 		};
 	};
 };
+
+/** 
+* Defines status of brick
+* @TODO: Make a more sophisticated progressing system and randomisation system
+*
+* @param (1): brick columns
+* @param (2): brick rows
+*
+* @return: brick status integer
+*/
 function randomiseBrick(c, r) {
 	if (level == 1) {
 		switch(r){
 			case 0: return 1;
-			case 1: return 1;
 			default: return 0;
 		};
 	} else {
@@ -190,6 +254,11 @@ function randomiseBrick(c, r) {
 	};
 };
 
+/** 
+* Provides random status for bricks based set probabilities
+*
+* @return: randomised brick status
+*/
 function randomise() {
 	if (Math.floor(Math.random()*5)+1 == 1) {
 		return 0;
@@ -199,12 +268,18 @@ function randomise() {
 		return 1;
 	};
 };
+/** 
+* Draws Lives
+*/
 function drawLives() {
     ctx.font = &quot;16px Arial&quot;;
     ctx.fillStyle = &quot;#0095DD&quot;;
     ctx.fillText(&quot;Lives: &quot; + lives, canvas.width-65, 20);
 };
 
+/** 
+* Draws Score
+*/
 function drawScore() {
 	ctx.beginPath();
 	ctx.font = &quot;16px Arial&quot;;
@@ -213,6 +288,11 @@ function drawScore() {
 	ctx.closePath();
 };
 
+/** 
+* Tracks pressed keys and handles movement, pause and start
+* 
+* @param: event
+*/
 function keyDownHandler(e) {
 	if(e.keyCode==39) {
 		rightPressed = true;
@@ -225,7 +305,11 @@ function keyDownHandler(e) {
 		startPressed = true;
 	};
 };
-
+/** 
+* Tracks keys going up and handles movement
+* 
+* @param: event
+*/
 function keyUpHandler(e) {
 	if(e.keyCode==39) {
 		rightPressed = false;
@@ -235,6 +319,11 @@ function keyUpHandler(e) {
 	};
 };
 
+/** 
+* Tracks mouse and defines paddle mouse control
+* 
+* @param: event
+*/
 function mouseMoveHandler(e) {
 	if (!pausePressed) {
 		var relativeX = e.clientX - canvas.offsetLeft;
@@ -247,6 +336,12 @@ function mouseMoveHandler(e) {
 	};
 };
 
+/** 
+* Checks whether player is dead and removes life.
+* If player is dead, it returns false. Otherwise, respawns paddle and ball in middle
+* 
+* @return: boolean
+*/
 function isDead() {
 	if (lives-1 &lt; 1) {
 		lives--;
@@ -258,6 +353,9 @@ function isDead() {
 	};
 };
 
+/** 
+* Respawns playet and ball at the middle of the canvas
+*/
 function respawn() {
 	ball.x = canvas.width/2;
 	ball.y = BALL_Y_MARGIN;
@@ -283,20 +381,24 @@ function respawn() {
 				margin: 10px 0 10px 0;
 			}
 		&lt;/style&gt;
-	&lt;!--&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/paddle.js&quot;&gt;&lt;/script&gt;
-	&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/ball.js&quot;&gt;&lt;/script&gt;	
-	&lt;script type=&quot;text/javascript&quot; src=&quot;../../../../../Breakout/brick.js&quot;&gt;&lt;/script&gt;		--&gt;
-
+			&lt;!--  Include only outside Jekyll
+			&lt;script type=&quot;text/javascript&quot; src=&quot;js/paddle.js&quot;&gt;&lt;/script&gt;
+			&lt;script type=&quot;text/javascript&quot; src=&quot;js/ball.js&quot;&gt;&lt;/script&gt;	
+			&lt;script type=&quot;text/javascript&quot; src=&quot;js/brick.js&quot;&gt;&lt;/script&gt;
+			&lt;script type=&quot;text/javascript&quot; src=&quot;js/brickHelper.js&quot;&gt;&lt;/script&gt;
+			&lt;script type=&quot;text/javascript&quot; src=&quot;js/gameHelper.js&quot;&gt;&lt;/script&gt;
+			--&gt;
 		&lt;script&gt;
 			var canvas;
 			var ctx;
 
+			// key press recognition
 			var rightPressed;
 			var leftPressed;
 			var startPressed;
 			var pausePressed;
 			
-			// score and lives
+			// score, lives and levels
 			var score = 0;
 			var lives = 3;
 			var level = 1;
@@ -324,10 +426,10 @@ function respawn() {
 			var BRICK_COLOR = &quot;#0085DD&quot;;
 			var BRICK_STATUS = 1;
 			var BRICK_COLLISION_PHYSICS = false; 
-			var BRICK_COLS = 10;
+			var BRICK_COLS = 6;
 			var BRICK_ROWS = 4;
 			var BRICK_OFFSET_TOP = 50;
-			var BRICK_OFFSET_LEFT = 70;
+			var BRICK_OFFSET_LEFT = 40;
 			var BRICK_PADDING = 10;
 			var bricks;
 
@@ -339,6 +441,7 @@ function respawn() {
 				BALL_Y_MARGIN = canvas.height-31;
 				PADDLE_Y_MARGIN = canvas.height-20;
 
+				//create paddle and ball objects
 				ball = new Ball(canvas.width/2, BALL_Y_MARGIN, BALL_RADIUS, BALL_COLOR);
 				paddle = new Paddle(PADDLE_START_X, PADDLE_Y_MARGIN, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
 
@@ -351,30 +454,34 @@ function respawn() {
 				document.addEventListener(&quot;keyup&quot;, keyUpHandler, false);
 				document.addEventListener(&quot;mousemove&quot;, mouseMoveHandler, false);
 
+				// see brickHelper.js
 				bricks = [];
 				generateBricks();
 
-				//loop();
-				setInterval(loop, 15);
+				loop();
+				//setInterva() is better for testing purposes, as the frame rates can be manipulated
+				//setInterval(loop, 15); 
 
 			}; 
 
+			//Houses all game logic and animation
 			function loop() {
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				//requestAnimationFrame(loop);
+				requestAnimationFrame(loop);
 
-				
+				//define collissoion and boundary behaviour
 				ball.bound(canvas);
 				paddle.collide(ball);
+				collisionDetection();
 
+				//draw objects
 				ball.draw(ctx);
 				paddle.draw(ctx);
 				drawScore();
 				drawLives();
-
-				collisionDetection();
 				drawBricks();
 
+				// Game over logic - refer to gameHeper.js
 				if ((ball.y+ball.dy) &gt; (canvas.height-ball.radius)) {
 					if (isDead()) {
 						alert(&quot;GAME OVER&quot;);
@@ -408,12 +515,13 @@ function respawn() {
 
 		&lt;/script&gt;
 	&lt;/head&gt;
+
 	&lt;body onload=&quot;init()&quot;&gt;
 		&lt;h1&gt;Game Rules:&lt;/h1&gt;
 		&lt;p&gt;Press Enter or Up arrow to start.&lt;br /&gt;
 			Press Space to pause.&lt;br /&gt;
 			Press Left Arrow and Right Arrow to move paddle, or use mouse.&lt;/p&gt;
-		&lt;canvas id=&quot;myCanvas&quot; height=&quot;600&quot; width=&quot;960&quot;&gt;&lt;/canvas&gt;
+		&lt;canvas id=&quot;myCanvas&quot; height=&quot;400&quot; width=&quot;600&quot;&gt;&lt;/canvas&gt;
 
 
 

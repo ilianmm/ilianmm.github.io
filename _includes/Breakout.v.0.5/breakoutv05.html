@@ -12,20 +12,24 @@
 				margin: 10px 0 10px 0;
 			}
 		</style>
-	<!--<script type="text/javascript" src="../../../../../Breakout/paddle.js"></script>
-	<script type="text/javascript" src="../../../../../Breakout/ball.js"></script>	
-	<script type="text/javascript" src="../../../../../Breakout/brick.js"></script>		-->
-
+			<!--  Include only outside Jekyll
+			<script type="text/javascript" src="js/paddle.js"></script>
+			<script type="text/javascript" src="js/ball.js"></script>	
+			<script type="text/javascript" src="js/brick.js"></script>
+			<script type="text/javascript" src="js/brickHelper.js"></script>
+			<script type="text/javascript" src="js/gameHelper.js"></script>
+			-->
 		<script>
 			var canvas;
 			var ctx;
 
+			// key press recognition
 			var rightPressed;
 			var leftPressed;
 			var startPressed;
 			var pausePressed;
 			
-			// score and lives
+			// score, lives and levels
 			var score = 0;
 			var lives = 3;
 			var level = 1;
@@ -53,10 +57,10 @@
 			var BRICK_COLOR = "#0085DD";
 			var BRICK_STATUS = 1;
 			var BRICK_COLLISION_PHYSICS = false; 
-			var BRICK_COLS = 10;
+			var BRICK_COLS = 6;
 			var BRICK_ROWS = 4;
 			var BRICK_OFFSET_TOP = 50;
-			var BRICK_OFFSET_LEFT = 70;
+			var BRICK_OFFSET_LEFT = 40;
 			var BRICK_PADDING = 10;
 			var bricks;
 
@@ -68,6 +72,7 @@
 				BALL_Y_MARGIN = canvas.height-31;
 				PADDLE_Y_MARGIN = canvas.height-20;
 
+				//create paddle and ball objects
 				ball = new Ball(canvas.width/2, BALL_Y_MARGIN, BALL_RADIUS, BALL_COLOR);
 				paddle = new Paddle(PADDLE_START_X, PADDLE_Y_MARGIN, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
 
@@ -80,30 +85,34 @@
 				document.addEventListener("keyup", keyUpHandler, false);
 				document.addEventListener("mousemove", mouseMoveHandler, false);
 
+				// see brickHelper.js
 				bricks = [];
 				generateBricks();
 
-				//loop();
-				setInterval(loop, 15);
+				loop();
+				//setInterva() is better for testing purposes, as the frame rates can be manipulated
+				//setInterval(loop, 15); 
 
 			}; 
 
+			//Houses all game logic and animation
 			function loop() {
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				//requestAnimationFrame(loop);
+				requestAnimationFrame(loop);
 
-				
+				//define collissoion and boundary behaviour
 				ball.bound(canvas);
 				paddle.collide(ball);
+				collisionDetection();
 
+				//draw objects
 				ball.draw(ctx);
 				paddle.draw(ctx);
 				drawScore();
 				drawLives();
-
-				collisionDetection();
 				drawBricks();
 
+				// Game over logic - refer to gameHeper.js
 				if ((ball.y+ball.dy) > (canvas.height-ball.radius)) {
 					if (isDead()) {
 						alert("GAME OVER");
@@ -137,12 +146,13 @@
 
 		</script>
 	</head>
+
 	<body onload="init()">
 		<h1>Game Rules:</h1>
 		<p>Press Enter or Up arrow to start.<br/>
 			Press Space to pause.<br/>
 			Press Left Arrow and Right Arrow to move paddle, or use mouse.</p>
-		<canvas id="myCanvas" height="600" width="960"></canvas>
+		<canvas id="myCanvas" height="400" width="600"></canvas>
 
 
 
